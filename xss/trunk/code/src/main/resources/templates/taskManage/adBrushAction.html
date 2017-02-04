@@ -1,0 +1,295 @@
+<!DOCTYPE html >
+<html xmlns:th="http://www.springframework.org/schema/mvc">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title></title>
+    <link rel="shortcut icon" href="/favicon.ico"/>
+    <link href="/bootstrap/bootstrap.min.css?v=3.3.6" rel="stylesheet"/>
+    <link href="/font-awesome/font-awesome.min.css?v=4.4.0" rel="stylesheet"/>
+    <link href="/animate/animate.min.css" rel="stylesheet"/>
+    <link href="/css/style.min.css?v=4.1.0" rel="stylesheet"/>
+    <link href="/sweetalert/sweetalert.css" rel="stylesheet"/>
+    <link href="/jquery-ui/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <link href="/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/ngComponents/ngComponents.css" rel="stylesheet" type="text/css"/
+    <!--JS-->
+    <script src="/jquery/jquery.min.js?v=2.1.4"></script>
+    <script src="/js/content.min.js?v=1.0.0"></script>
+    <script type="application/javascript" src="/angular-1.3.9/angular.min.js"></script>
+    <script type="application/javascript" src="/angular-1.3.9/angular-file-upload.min.js"></script>
+    <script type="application/javascript" src="/angular-1.3.9/angular-cc.js"></script>
+    <script src="/sweetalert/sweetalert.min.js"></script>
+    <script type="text/javascript" src="/jquery-ui/jquery.js"></script>
+    <script type="application/javascript" src="/jquery-ui/jquery-ui.min.js"></script>
+    <script src="/controllers/common.js"></script>
+    <script src="/bootstrap/bootstrap.min.js?v=3.3.6"></script>
+    <script type="application/javascript" src="/bootstrap-switch/js/bootstrap-switch.min.js" ></script>
+    <script type="application/javascript" src="/ngComponents/ngComponents.js"></script>
+
+    <!--layer.js-->
+    <link rel="stylesheet" type="text/css" href="/layer/skin/layer.css"/>
+    <link href="/layer/skin/layer.css" rel="stylesheet" type="text/css"/>
+    <script src="/layer/layer.min.js"></script>
+
+    <!--tiem-->
+    <script type="text/javascript" src="/s/moment.js"></script>
+    <script type="text/javascript" src="/s/daterangepicker.js"></script>
+    <link rel="stylesheet" type="text/css" href="/s/daterangepicker.css" />
+
+
+    <style>
+        div.location .label {
+            width: 140px;
+            float: left;
+            margin-right: 3px;
+            display: block;
+            cursor: pointer;
+        }
+        input{border-radius:5px}
+    </style>
+</head>
+<body class="gray-bg" ng-app="myapp" ng-controller="BaseController">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5>广告任务脚本配置</h5>
+
+            <div class="ibox-tools">
+                <a class="collapse-link">
+                    <i class="fa fa-chevron-up"></i>
+                </a>
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-wrench"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-user">
+                    <li><a href="#">选项1</a>
+                    </li>
+                    <li><a href="#">选项2</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="ibox-content">
+            <br/>
+            <br/>
+            <br/>
+            <button type="button" class="btn btn-success" ng-click="addAdBrushAction();">添加</button>
+            <table class="table table-bordered table-hover definewidth m10">
+                <thead>
+
+                <tr>
+
+                    <th width="100px">步骤</th>
+                    <th width="800px">行为</th>
+                    <th>操作</th>
+                    <!--<th th:text="${adActiveTask.id}"></th>-->
+                </tr>
+                </thead>
+                <tr>
+
+                    <td >
+                        <table class="table table-bordered table-hover definewidth m10">
+                            <tr ng-repeat="adBrushAction in adActiveTask.adBrushActions"
+                                ng-style="selectKey==$index?{'background-color':'#9AFF9A'}:{}">
+                                <td STYLE="cursor:pointer" ng-click=selectIndex($index)>{{$index+1}}</td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td >
+                        <table class="table table-bordered table-hover definewidth m10" ng-show="adActiveTask.adBrushActions.length>0">
+                            <tr>
+                                <td>
+                                    <label class="label label-inverse"> 执行操作：</label>
+                                    <select ng-model="onAdBrushAction.action">
+                                        <option value="open" >打开连接</option>
+                                        <option value="sleep" >休眠等待</option>
+                                        <option value="run-js" >执行JS</option>
+                                        <option value="click" >点击</option>
+                                        <option value="switch-to-frame" >选择iFrame</option>
+                                        <option value="render" >截图</option>
+                                    </select>
+                            </tr>
+                            <tr ng-show="onAdBrushAction.action=='open'">
+                                <td>
+                                    <label class="label label-inverse">URL ：</label>&nbsp&nbsp&nbsp&nbsp
+                                    <input type="text" placeholder="" ng-model="onAdBrushAction.url"/>
+                                </td>
+                            </tr>
+                            <tr  ng-show="onAdBrushAction.action=='sleep'">
+                                <td>
+                                    <label class="label label-inverse">等待时间：</label>
+                                    <input type="number" placeholder="" ng-model="onAdBrushAction.timeout">(毫秒)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td ng-show="onAdBrushAction.action=='run-js'">
+                                    <label class="label label-inverse"> matchUrl：</label>
+                                    <!--<input type="text" placeholder="" ng-model="onAdBrushAction.matchUrl">-->
+                                    <textarea style="width:80%;" ng-model="onAdBrushAction.matchUrl"></textarea>
+                                    <br>
+                                    <span>
+                                          格式：blank|notCon:xxx1,xxx2|con:xxx|con:xxx。多个判断规则以‘|’分隔，只要有一个规则满足即可。
+                                          <br>
+                                          blank: 表示该页面有打开子页面；
+                                          notCon:当前页面URL不包含xxx1和xxx2；
+                                          con：当前页面URL包含xxx；
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td ng-show="onAdBrushAction.action=='run-js'">
+                                    <label class="label label-inverse">脚本代码：</label>
+                                    <textarea style="width:80%;" ng-model="onAdBrushAction.code"></textarea>
+                                    <br>
+                                        <span>
+                                                返回值：
+                                                exit-success:任务成功，退出；
+                                                exit-failed:任务失败，退出；
+                                        </span>
+                                </td>
+                            </tr>
+                            <tr ng-show="onAdBrushAction.action=='switch-to-frame'">
+                                <td>
+                                    <label class="label label-inverse">frame(名称/ID/位置) ：</label>
+                                    <input type="text" placeholder="" ng-model="onAdBrushAction.frame"/>
+                                </td>
+                            </tr>
+                            <tr ng-show="onAdBrushAction.action=='switch-to-frame' || onAdBrushAction.action=='run-js' || onAdBrushAction.action=='click'">
+                                <td>
+                                    <label class="label label-inverse">检测脚本：</label>
+                                    <textarea style="width:80%;" ng-model="onAdBrushAction.checkCode"></textarea>
+                                    <br>
+                                    <span>
+                                            返回值：
+                                            true:该步骤执行；
+                                            false:该步骤不执行；
+                                            exit-success:任务成功，退出；
+                                            exit-failed:任务失败，退出；
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr ng-show="onAdBrushAction.action=='click'">
+                                <td>
+                                    <label class="label label-inverse">横坐标（X） ：</label>
+                                    <input type="text" placeholder="" ng-model="onAdBrushAction.mouseX"/>
+                                </td>
+                            </tr>
+                            <tr ng-show="onAdBrushAction.action=='click'">
+                                <td>
+                                    <label class="label label-inverse">纵坐标（Y） ：</label>
+                                    <input type="text" placeholder="" ng-model="onAdBrushAction.mouseY"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td>
+                        <a href class="btn btn-danger" ng-click="remove();">删除</a>
+                        <a href class="btn btn-success" ng-click="insertAdBrushAction();">插入</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan=3>
+                        <a ng-click="save()" type="button" class="btn btn-primary">提交</a>
+                        <a href="/adActiveTask/index.html" type="button" class="btn btn-info">返回</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+<!-- End Panel Other -->
+</div>
+<script th:inline="javascript">
+/*<![CDATA[*/
+
+
+    var app = angular.module("myapp", ['angularFileUpload']);
+    RegisterSwitch1(app);
+    app.controller("BaseController", function($scope, $http, $location, $sce, $timeout, FileUploader) {
+
+        $scope.adActiveTask = /*[[${adActiveTask}]]*/ 'Sebastian';
+        $scope.AdBrushActionMo = {
+            action : "",
+            url : "",
+            timeout: 0,
+            code: "",
+            matchUrl: "",
+            frame: "",
+            checkCode: ""
+        }
+
+
+        $scope.selectKey = 0
+
+        $scope.addAdBrushAction = function(){
+            var adBrushAction = angular.copy($scope.AdBrushActionMo);
+            if(!$scope.adActiveTask.adBrushActions)
+            {
+                $scope.adActiveTask.adBrushActions = [];
+                $scope.selectIndex(0)
+            }
+            $scope.adActiveTask.adBrushActions.push(adBrushAction);
+            $scope.selectIndex($scope.adActiveTask.adBrushActions.length-1)
+        }
+
+        $scope.insertAdBrushAction = function(){
+            var adBrushAction = angular.copy($scope.AdBrushActionMo);
+            if(!$scope.adActiveTask.adBrushActions||$scope.adActiveTask.adBrushActions.length==0)
+            {
+                layer.alert("请先添加步骤");
+                return;
+            }
+            $scope.adActiveTask.adBrushActions.splice( $scope.selectKey, 0, adBrushAction);
+            $scope.selectIndex( $scope.selectKey+1)
+        }
+
+
+        $scope.selectIndex = function(i){
+            $scope.selectKey = i;
+            $scope.onAdBrushAction = $scope.adActiveTask.adBrushActions[i];
+        }
+        $scope.remove = function(){
+            $scope.adActiveTask.adBrushActions.splice( $scope.selectKey,1);
+            $scope.onAdBrushAction = $scope.adActiveTask.adBrushActions[$scope.selectKey];
+        }
+        $scope.save = function(){
+            $scope.adActiveTask.predictTime = new Date($scope.adActiveTask.predictTime).Format("yyyy-MM-dd hh:mm:ss");
+            $scope.adActiveTask.start = new Date($scope.adActiveTask.start).Format("yyyy-MM-dd hh:mm:ss");
+            $scope.adActiveTask.end = new Date($scope.adActiveTask.end).Format("yyyy-MM-dd hh:mm:ss");
+            $scope.adActiveTask.created = new Date($scope.adActiveTask.created).Format("yyyy-MM-dd hh:mm:ss");
+            $scope.adActiveTask.predictTime = new Date($scope.adActiveTask.created).Format("yyyy-MM-dd hh:mm:ss");
+            layer.msg('数据提交中，稍等.....');
+            $http.post("/adActiveTask/saveAdBrushActions.api", $scope.adActiveTask)
+                    .success(function(data) {
+                       layer.alert("提交成功")
+                    });
+            }
+        Date.prototype.Format = function (fmt) { //author: meizz
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "h+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        }
+        if($scope.adActiveTask.adBrushActions){
+            $scope.selectIndex(0)
+        }
+
+
+
+    });
+/*]]>*/
+</script>
+</body>
+</html>

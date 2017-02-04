@@ -1,0 +1,54 @@
+package com.xp.brushms.service;
+
+import com.xp.brushms.dao.WorkMachineDao;
+import com.xp.brushms.dao.mongo.Pagination;
+import com.xp.brushms.entity.WorkMachine;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+/**
+ * Created by sjh on 2016/1/19.
+ */
+@Repository("workMachineService")
+public class WorkMachineServiceImpl implements  WorkMachineService{
+
+    @Autowired
+    WorkMachineDao workMachineDao;
+
+    @Override
+    public WorkMachine getById(String id) {
+        return workMachineDao.getById(id);
+    }
+
+    @Override
+    public void saveItem(WorkMachine machine) {
+        workMachineDao.saveItem(machine);
+    }
+
+    @Override
+    public void remove(String id) {
+        workMachineDao.remove(id);
+    }
+
+    @Override
+    public Pagination<WorkMachine> getWorkMachines(int pageNo, int pageSize, String id, String mac, String ip) {
+        return workMachineDao.getWorkMachines(pageNo, pageSize, id, mac, ip);
+    }
+
+    @Override
+    public List<WorkMachine> getWorkMachineList(int machineType, int count) {
+        return workMachineDao.getWorkMachineList(machineType, count);
+    }
+
+    @Override
+    public WorkMachine getByMac(String mac) {
+        return workMachineDao.getByMac(mac);
+    }
+
+    @Override
+    public List<WorkMachine> getWorkMachines() {
+        return workMachineDao.getWorkMachines();
+    }
+}

@@ -1,0 +1,21 @@
+#!/bin/sh
+trap "echo 'start-result-failed:trap error 1';exit" ERR
+num=100
+if [ $1 ]; then
+        num=$1
+fi
+
+export JAVA_HOME=/usr/local/java/jdk1.8.0_11
+export JRE_HOME=/usr/local/java/jdk1.8.0_11/jre
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib:$CLASSPATH
+export PATH=$JAVA_HOME/bin:$PATH
+#nohup /usr/local/java/jdk1.8.0_11/bin/java -jar /home/apps/brushClient/brushClient.jar >> /home/apps/brushClient/run.log 2>&1 &
+
+curPath=`pwd`
+if [ ! -d $curPath"/logs" ];then
+	mkdir $curPath"/logs"
+fi
+runlogf=$curPath/logs/`date '+%Y-%m-%d'`_run.log
+nohup java -jar $curPath/brushClient.jar $num >> $runlogf 2>&1 &
+echo "start brushClient success<<<<<<"$num
+echo "start-result-success"

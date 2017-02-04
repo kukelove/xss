@@ -1,0 +1,79 @@
+package com.xp.brushms.client;
+
+import com.cc.ccutils.JsonUtils;
+
+/**
+ * 主入口
+ */
+public class Test_qunaer {
+
+    public static void main(String[] args) {
+
+        RunTask task = new RunTask();
+        task.setTaskId("00000041");
+        task.setTimeout(120000);
+        task.setWriteLog(true);
+//        task.setProxy("112.5.16.35:2999");
+        task.setProxy("127.0.0.1:8888");
+        task.setUa("Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36");
+        task.addOpenAction("http://touch.qunar.com/?bd_source=jbjt");
+        task.addSleepAction(15000);
+
+        String jsEnvent_click =  "  var event = document.createEvent('Events');" +
+                "  event.initEvent('click', true, true);" +
+                "  ele.dispatchEvent(event);";
+
+        String jsEnvent_tap =  "  var event = document.createEvent('Events');" +
+                "  event.initEvent('tap', true, true);" +
+                "  ele.dispatchEvent(event);";
+
+        String js_1 = "var selectors = new Array('.item.flex2.hotel', '.item.flex2.flight');" +
+                "var i = Math.round(Math.random() * 2);" +
+                "var ele = document.querySelector(selectors[i]);" +
+                jsEnvent_click;
+
+        task.addRunJsAction(js_1, null, null);
+        task.addSleepAction(15000);
+        task.addRenderAction();
+
+        String js_2 = "var url = document.URL;console.log('url:' + url); var ele;" +
+                "if(url.indexOf('hotel') >= 0) {ele = document.querySelector('.submit.qt-white');}" +
+                "else if(url.indexOf('flight') >= 0) {ele = document.querySelector('.serach-btn.oneWaySubmit');}" +
+                "console.log('ele:' + ele);"
+                + jsEnvent_tap;
+
+        task.addRunJsAction(js_2, "flight | hotel", null);
+        task.addSleepAction(10000);
+        task.addRenderAction();
+
+        String js_3 = "var url = document.URL;console.log('url:' + url); var eles;" +
+                "if(url.indexOf('hotel') >= 0) {eles = document.querySelectorAll('div.list-content > div > ul > li');}" +
+                "else if(url.indexOf('flight') >= 0) {eles = document.querySelectorAll('#flightList_ul > li');}" +
+                "if(eles.length == 0) {return;}" +
+                "var ele = eles[Math.round(Math.random() * eles.length)];"
+                + jsEnvent_tap;
+
+        task.addRunJsAction(js_3, "flightlist | hotellist", null);
+        task.addSleepAction(10000);
+        task.addRenderAction();
+
+        String js_4 = "var url = document.URL;console.log('url:' + url); var eles;" +
+                "if(url.indexOf('hotel') >= 0) {eles = document.querySelectorAll('.order-btn.order-icon');}" +
+                "else if(url.indexOf('flight') >= 0) {eles = document.querySelectorAll('.btn.yudin.js_btn');}" +
+                "if(eles.length == 0) {return;}" +
+                "var ele = eles[Math.round(Math.random() * eles.length)];"
+                + jsEnvent_tap;
+
+        task.addRunJsAction(js_4, "flightDetail | hoteldetail", null);
+        task.addSleepAction(10000);
+        task.addRenderAction();
+
+        String js_5 = "";
+        task.addRunJsAction(js_5, "flightAV|orderinfo", null);
+
+        PhantomJsUtils.TaskResult result = PhantomJsUtils.execute(task);
+        System.out.println("result:" + JsonUtils.toJson(result));
+
+    }
+
+}

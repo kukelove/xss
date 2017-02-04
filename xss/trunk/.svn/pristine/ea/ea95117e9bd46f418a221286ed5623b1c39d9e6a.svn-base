@@ -1,0 +1,111 @@
+package com.xp.brushms.dao.mongo;
+
+import com.xp.brushms.dao.WorkMachineDao;
+import com.xp.brushms.entity.WorkMachine;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.query.BasicQuery;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
+
+import java.util.List;
+
+/**
+ * Created by sjh on 2016/1/19.
+ */
+@Repository("workMachineDao")
+public class WorkMachineDaoImpl extends MongodbBaseDaoImpl<WorkMachine> implements WorkMachineDao {
+    @Override
+    protected Class<WorkMachine> getEntityClass() {
+        return WorkMachine.class;
+    }
+
+    @Override
+    public WorkMachine getById(String id) {
+        return findById(id);
+    }
+
+    @Override
+    public WorkMachine getByMac(String mac) {
+        Query query=new Query(Criteria.where("mac").is(mac));
+       return findOne(query);
+    }
+
+    @Override
+    public void saveItem(WorkMachine machine) {
+        save(machine);
+    }
+
+    @Override
+    public void updateItemStatus(String id ,String status) {
+        Query query=new Query(Criteria.where("id").is(id));
+        Update update = new Update();
+        update.set("status", status);
+        updateFirst(query, update);
+    }
+
+    @Override
+    public void remove(String id) {
+        Query query=new Query(Criteria.where("id").is(id));
+        findAndRemove(query);
+
+    }
+
+    @Override
+    public Pagination<WorkMachine> getWorkMachines(int pageNo, int pageSize, String id,  String mac, String ip) {
+        BasicQuery query = createQuery();
+        Criteria c = new Criteria();
+        if (StringUtils.isEmpty(id) == false) {
+
+            c.and("id").is(id);
+        }
+        if (StringUtils.isEmpty(ip) == false) {
+
+            c.and("ip").is(ip);
+        }
+        if (StringUtils.isEmpty(mac) == false) {
+            c.and("mac").is(mac);
+        }
+        query.addCriteria(c);
+        query.with(new Sort(Sort.Direction.DESC, "lastConnectTime"));
+        return this.getPage(pageNo, pageSize, query);
+    }
+
+    @Override
+    public List<WorkMachine> getWorkMachineBy_id_mac(String id, String mac,String ip) {
+        BasicQuery query = createQuery();
+        Criteria c = new Criteria();
+        if (StringUtils.isEmpty(id) == false) {
+
+            c.and("id").is(id);
+        }
+        if (StringUtils.isEmpty(mac) == false) {
+            c.and("mac").is(mac);
+        }
+        if (StringUtils.isEmpty(ip) == false) {
+            c.and("ip").is(ip);
+        }
+        query.addCriteria(c);
+
+        return find(query);
+    }
+
+    @Override
+    public List<WorkMachine> getWorkMachineList(int machineType, int count) {
+        BasicQuery query = createQuery();
+        Criteria c = new Criteria();
+        c.where("machineType").is(machineType);
+        c.where("send").is(false);
+        query.with(new Sort(Sort.Direction.ASC, "created"));
+        query.addCriteria(c);
+        query.limit(count);
+        return find(query);
+    }
+
+    @Override
+    public List<WorkMachine> getWorkMachines() {
+        return findAll();
+    }
+}

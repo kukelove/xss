@@ -1,0 +1,78 @@
+buildscript {
+    ext {
+        springBootVersion = '1.3.2.RELEASE'
+    }
+    repositories {
+        maven { url "http://repo.spring.io/snapshot" }
+        maven { url "http://repo.spring.io/milestone" }
+	    mavenCentral()
+        //jcenter()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("io.spring.gradle:dependency-management-plugin:0.5.0.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'spring-boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'war'
+
+war {
+    baseName = 'brushms'
+//    version = '1.0.0-SNAPSHOT'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+repositories {
+    mavenCentral()
+    maven { url "http://repo.spring.io/snapshot" }
+    maven { url "http://repo.spring.io/milestone" }
+}
+
+configurations {
+    providedRuntime
+    //compile.exclude module: 'spring-boot-starter-tomcat'
+    //compile.exclude group: 'org.apache.tomcat.embed'
+        compile.exclude group:'ch.qos.logback'
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(dir: '../ccutils/build/libs', include: ['*.jar'])
+    compile ("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: 'org.springframework.boot:spring-boot-starter-logging'
+    }
+    compile ('org.springframework.boot:spring-boot-starter-log4j')
+    compile("org.springframework.boot:spring-boot-starter-data-mongodb")
+    compile("org.apache.httpcomponents:httpclient")
+    compile("org.springframework:spring-aspects")
+    compile("org.springframework:spring-context-support")
+    compile("org.quartz-scheduler:quartz:2.2.1")
+    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+    compile("net.sourceforge.nekohtml:nekohtml:1.9.22")
+    compile("com.google.code.gson:gson:2.6.2");
+    compile('net.sf.json-lib:json-lib:2.4:jdk15')
+    compile('org.bouncycastle:bcprov-jdk16:1.46')
+    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+    testCompile ("junit:junit:4.11")
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
+}
+
+task "create-dirs" << {
+    sourceSets*.java.srcDirs*.each { it.mkdirs() }
+    sourceSets*.scala.srcDirs*.each { it.mkdirs() }
+    sourceSets*.resources.srcDirs*.each { it.mkdirs() }
+}
+
+bootRun {
+    addResources = true
+}

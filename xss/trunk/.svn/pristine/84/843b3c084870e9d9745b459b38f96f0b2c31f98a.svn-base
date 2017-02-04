@@ -1,0 +1,258 @@
+<!DOCTYPE html >
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title></title>
+  <link rel="shortcut icon" href="/favicon.ico"/>
+  <link href="/bootstrap/bootstrap.min.css?v=3.3.6" rel="stylesheet"/>
+  <link href="/font-awesome/font-awesome.min.css?v=4.4.0" rel="stylesheet"/>
+  <link href="/animate/animate.min.css" rel="stylesheet"/>
+  <link href="/css/style.min.css?v=4.1.0" rel="stylesheet"/>
+  <link href="/sweetalert/sweetalert.css" rel="stylesheet"/>
+  <link href="/jquery-ui/jquery-ui.css" rel="stylesheet" type="text/css"/>
+  <link href="/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" type="text/css"/>
+  <link href="/ngComponents/ngComponents.css" rel="stylesheet" type="text/css"/>
+  <!--JS-->
+  <script src="/jquery/jquery.min.js?v=2.1.4"></script>
+  <script src="/js/content.min.js?v=1.0.0"></script>
+  <script type="application/javascript" src="/angular-1.3.9/angular.min.js"></script>
+  <script type="application/javascript" src="/angular-1.3.9/angular-file-upload.min.js"></script>
+  <script type="application/javascript" src="/angular-1.3.9/angular-cc.js"></script>
+  <script src="/sweetalert/sweetalert.min.js"></script>
+  <script type="text/javascript" src="/jquery-ui/jquery.js"></script>
+  <script type="application/javascript" src="/jquery-ui/jquery-ui.min.js"></script>
+  <script src="/controllers/common.js"></script>
+  <script src="/bootstrap/bootstrap.min.js?v=3.3.6"></script>
+  <script type="application/javascript" src="/bootstrap-switch/js/bootstrap-switch.min.js" ></script>
+  <script type="application/javascript" src="/ngComponents/ngComponents.js"></script>
+
+  <!--layer.js-->
+  <link rel="stylesheet" type="text/css" href="/layer/skin/layer.css"/>
+  <link href="/layer/skin/layer.css" rel="stylesheet" type="text/css"/>
+  <script src="/layer/layer.min.js"></script>
+
+
+  <style>
+    div.location .label {
+      width: 140px;
+      float: left;
+      margin-right: 3px;
+      display: block;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body class="gray-bg" ng-app="myapp" ng-controller="BaseController">
+
+
+<div class="wrapper wrapper-content animated fadeInRight">
+  <div class="ibox float-e-margins">
+    <div class="ibox-title">
+      <h5>工作机管理</h5>
+
+      <div class="ibox-tools">
+        <a class="collapse-link">
+          <i class="fa fa-chevron-up"></i>
+        </a>
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+          <i class="fa fa-wrench"></i>
+        </a>
+        <ul class="dropdown-menu dropdown-user">
+          <li><a href="#">选项1</a>
+          </li>
+          <li><a href="#">选项2</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="ibox-content">
+
+      <form class="form-inline" ng-submit="firstPage();">
+        <div class="form-group">
+          ID：
+          <input  style="border-radius:5px;" type="text" class="form-control" placeholder="" ng-model="query.id">&nbsp;&nbsp;
+          MAC：
+          <input style="border-radius:5px;" type="text" class="form-control" placeholder="" ng-model="query.mac">
+          IP：
+          <input style="border-radius:5px;" type="text" class="form-control" placeholder="" ng-model="query.ip">
+        </div>
+        <button type="submit" class="btn btn-primary">查询</button>
+        <button type="button" class="btn btn-info" ng-click="onAddItem();">添加</button>
+      </form>
+      <br/>
+      <br/>
+      <br/>
+      <table class="table table-bordered table-hover definewidth m10">
+        <thead>
+        <tr>
+          <th width="200px">ID</th>
+          <th>名称</th>
+          <th width="180px">MAC</th>
+          <th>IP</th>
+          <th>线程数</th>
+          <th>类型</th>
+          <th>状态</th>
+          <th>最后操作时间</th>
+          <th>操作</th>
+        </tr>
+        </thead>
+        <tbody >
+        <tr ng-repeat="item in items">
+          <td>{{item.id}}</td>
+          <td>{{item.name}}</td>
+          <td>{{item.mac}}</td>
+          <td>{{item.ip}}</td>
+          <td>{{item.threadCount}}</td>
+          <td>{{workMachineType[item.machineType]}}</td>
+          <td>{{item.status}}</td>
+          <td>{{item.lastConnectTime}}</td>
+          <td>
+            <a href class="btn btn-danger" ng-click="onRemoveItem(item);">删除</a>
+            <a href class="btn btn-primary" ng-click="onEditItem(item);">编辑</a>
+            <div class="dropdown">
+              <button ng-disabled="item.doAction==true" type="button" class="btn dropdown-toggle" id="dropdownMenu1"
+                      data-toggle="dropdown">
+                工作机操作
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                <li role="presentation"ng-repeat="(k, v) in codesMap">
+                  <a role="menuitem" tabindex="-1" ng-click="doAction(item,v,k)">{{v}}</a>
+                </li>
+              </ul>
+            </div>
+            <a href class="btn btn-success" ng-click="getStatus(item.lastCommandId, item.id);">获取最后结果</a>
+            <div ng-show="item.doAction==true">任务执行中</div>
+          
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="inline pull-right page">
+        <a href ng-click="firstPage();">首页</a>
+        <a href ng-click="prevPage();">上一页</a>
+        {{total}} 条记录 {{pageNo}}/{{totalPage}} 页 <a href ng-click="nextPage();">下一页</a>
+        <a href ng-click="lastPage();">尾页</a></div>
+    </div>
+  </div>
+</div>
+<div id="editItem" style="display:none">
+  <form action="#" method="post" class="definewidth m80">
+    <input type="hidden" name="id" value="" />
+    <table class="table table-bordered table-hover ">
+      <tr style="display:none;">
+        <td width="20%"  class="tableleft">Id</td>
+        <td><input  style="border-radius:5px;" type="text"  placeholder="" ng-model="editItem.id"></td>
+      </tr>
+      <tr>
+        <td width="20%" class="tableleft">名称</td>
+        <td><input style="border-radius:5px;" type="text" placeholder="" ng-model="editItem.name"></td>
+      </tr>
+      <tr>
+        <td width="20%" class="tableleft">MAC</td>
+        <td><input style="border-radius:5px;" type="text" placeholder="" ng-model="editItem.mac"></td>
+      </tr>
+      <tr>
+        <td width="20%" class="tableleft">IP</td>
+        <td> <input style="border-radius:5px;" type="text" checked  ng-model="editItem.ip"/></td>
+      </tr>
+
+      <tr>
+        <td width="20%" class="tableleft">类型</td>
+        <td>
+          <select style="border-radius:5px;" ng-model="editItem.machineType">
+            <option value="1" >PC</option>
+            <option value="2" >Phone</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td width="20%" class="tableleft">线程数</td>
+        <td> <input style="border-radius:5px;" type="number" checked  ng-model="editItem.threadCount"/></td>
+      </tr>
+      <tr>
+        <td width="20%" class="tableleft">extraStr</td>
+        <td><textarea style="border-radius:5px;" style="width:80%;" ng-model="editItem.extraStr"></textarea>
+      </tr>
+    </table>
+  </form>
+</div>
+
+<!-- End Panel Other -->
+</div>
+<script>
+
+  var app = angular.module("myapp", ['angularFileUpload']);
+  RegisterSwitch1(app);
+  app.controller("BaseController", function($scope, $http, $location, $sce, $timeout, FileUploader) {
+    $scope.remote = {
+      listUrl: "/workMachine/workMachines.api",
+      addUrl: "/workMachine/save_workMachine.api",
+      removeUrl: "/workMachine/remove.api",
+      updateUrl: "/workMachine/update.api"
+    };
+    $http.get("/code/codesinfo.api")
+            .success(function(data, status, headers, config){
+
+              $scope.codesMap =data;
+            })
+
+    BaseController($scope, $http);
+
+    $scope.onEditAfter = function(){
+      try {
+        $scope.editItem.extra = JSON.parse($scope.editItem.extraStr);
+      } catch (err) {
+        return {error:"额外信息json有错 " + err };
+      }
+      delete $scope.editItem['extraStr'];
+    }
+    $scope.onEditBefore = function(item){
+
+      $scope.editItem.extraStr = JSON.stringify($scope.editItem.extra || {});
+
+    }
+
+    $scope.doAction = function(item, action, id){
+
+      layer.confirm("是否执行\"" + action + "\"操作?", {icon: 4, title:"action"}, function(index) {
+        layer.close(index);
+        item.doAction = true;
+        $http.get("/workMachine/toAction.api", {params: {action: id, workMachineId:item.id}})
+                .success(function (data, status, headers, config) {
+
+                  layer.alert(data.message.replace(/\n/g,'</br>'));
+                  $scope.refresh();
+                });
+      });
+
+    }
+
+    $scope.getStatus = function(commandId, id){
+
+        if(commandId) {
+          $http.get("/workMachine/getStatus.api?commandId=" + commandId+"&&id="+id)
+                  .success(function (data, status, headers, config) {
+                    if(data.extra.result) {
+                      layer.alert(data.extra.errorMsg + "</br>" + data.extra.result.replace(/\n/g, '</br>'));
+                    }else{
+                      layer.alert("没有获取到原因")
+                    }
+                    $scope.refresh();
+//
+                  });
+        }else
+        {
+          layer.alert('最近没有执行任务');
+        }
+    }
+  });
+
+
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html >
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title></title>
+    <link rel="shortcut icon" href="/favicon.ico"/>
+    <link href="/bootstrap/bootstrap.min.css?v=3.3.6" rel="stylesheet"/>
+    <link href="/font-awesome/font-awesome.min.css?v=4.4.0" rel="stylesheet"/>
+    <link href="/animate/animate.min.css" rel="stylesheet"/>
+    <link href="/css/style.min.css?v=4.1.0" rel="stylesheet"/>
+    <link href="/sweetalert/sweetalert.css" rel="stylesheet"/>
+    <link href="/jquery-ui/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <link href="/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/ngComponents/ngComponents.css" rel="stylesheet" type="text/css"/>
+
+    <link href="/jquery-ui-multiselect-widget/jquery.multiselect.css" rel="stylesheet" type="text/css"/>
+    <link href="/jquery-ui-multiselect-widget/jquery.multiselect.filter.css" rel="stylesheet" type="text/css"/>
+    <script src="/jquery/jquery.min.js?v=2.1.4"></script>
+    <!--JS-->
+    <script src="/jquery/jquery.min.js?v=2.1.4"></script>
+    <script src="/js/content.min.js?v=1.0.0"></script>
+    <script type="application/javascript" src="/angular-1.3.9/angular.min.js"></script>
+    <script type="application/javascript" src="/angular-1.3.9/angular-file-upload.min.js"></script>
+    <script type="application/javascript" src="/angular-1.3.9/angular-cc.js"></script>
+    <script src="/sweetalert/sweetalert.min.js"></script>
+    <script type="text/javascript" src="/jquery-ui/jquery.js"></script>
+    <script type="application/javascript" src="/jquery-ui/jquery-ui.min.js"></script>
+
+    <script src="/bootstrap/bootstrap.min.js?v=3.3.6"></script>
+    <script type="application/javascript" src="/bootstrap-switch/js/bootstrap-switch.min.js" ></script>
+    <script type="application/javascript" src="/ngComponents/ngComponents.js"></script>
+
+    <script type="application/javascript" src="/jquery-ui-multiselect-widget/jquery-ui.min.js"></script>
+    <script type="application/javascript" src="/jquery-ui-multiselect-widget/jquery.multiselect.js"></script>
+    <script type="application/javascript" src="/jquery-ui-multiselect-widget/jquery.multiselect.filter.js"></script>
+    <script src="/controllers/common.js"></script>
+    <!--layer.js-->
+    <link rel="stylesheet" type="text/css" href="/layer/skin/layer.css"/>
+    <link href="/layer/skin/layer.css" rel="stylesheet" type="text/css"/>
+    <script src="/layer/layer.min.js"></script>
+
+    <!--tiem-->
+    <script type="text/javascript" src="/s/moment.js"></script>
+    <script type="text/javascript" src="/s/daterangepicker.js"></script>
+    <link rel="stylesheet" type="text/css" href="/s/daterangepicker.css" />
+
+
+    <style>
+        div.location .label {
+            width: 140px;
+            float: left;
+            margin-right: 3px;
+            display: block;
+            cursor: pointer;
+        }
+        input{border-radius:5px}
+    </style>
+</head>
+<body class="gray-bg" ng-app="myapp" ng-controller="BaseController">
+
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5>广告任务管理</h5>
+
+            <div class="ibox-tools">
+                <a class="collapse-link">
+                    <i class="fa fa-chevron-up"></i>
+                </a>
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-wrench"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-user">
+                    <li><a href="#">选项1</a>
+                    </li>
+                    <li><a href="#">选项2</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="ibox-content">
+
+            <form class="form-inline" ng-submit="reload()">
+                <div class="form-group">
+                    任务ID：
+                    <input  style="border-radius:5px;" type="text" class="form-control" placeholder="" ng-model="query.id"/>&nbsp;&nbsp;
+                </div>
+                <div class="form-group">
+                    时间：
+                    <input style="border-radius:5px;" class="form-control" type="text" name="birthdate1" ng-model="query.time"/>
+
+                </div>
+                <button type="submit" class="btn btn-primary">查询</button>
+                <button type="button" class="btn btn-info" ng-click="onAddItem();">添加</button>
+
+            </form>
+            <br/>
+            <br/>
+            <br/>
+            <table class="table table-bordered table-hover definewidth m10">
+                <thead>
+                <tr>
+                    <th width="100px">ID</th>
+                    <th>名称</th>
+                    <th width="100px">启用</th>
+                    <!--<th>工作机类型</th>-->
+                    <th>任务开始时间</th>
+                    <th>任务结束时间</th>
+                    <th>日工作量</th>
+                    <th>日成功量</th>
+                    <!--<th>总量</th>-->
+                    <th>最近分钟执行</th>
+                    <th>最近分钟未执行</th>
+                    <th>代理</th>
+                    <!--<th>创建时间</th>-->
+                    <td>是否加载图片</td>
+                    <td>是否动态分配</td>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="item in items">
+                    <td><a href="/report/index.html?id={{item.id}}">{{item.id}}</a></td>
+                    <td>{{item.name}}</td>
+                    <td>
+                        <ccswitch ng-model="item._enable"></ccswitch>
+
+                    </td>
+                    <!--<td>{{workMachineType[item.workMachineType]}}</td>-->
+                    <td>{{item.start}}</td>
+                    <td>{{item.end}}</td>
+                    <td>{{item.dayLimit}}</td>
+                    <td>{{item.daySuccessLimit}}</td>
+                    <!--<td>{{item.totalLimit}}</td>-->
+                    <td>{{item.runTask}}</td>
+                    <td>{{item.noRunTask}}</td>
+                    <td ><div ng-repeat="t in item.proxy">{{t}}</div></td>
+                    <!--<td>{{item.created}}</td>-->
+                    <td>{{item.loadImages==true?"是":"否"}}</td>
+                    <td>{{item.dynamic==true?"是":"否"}}</td>
+                    <td>
+                        <a href class="btn btn-danger" ng-click="onRemoveItem(item);">删除</a>
+                        <a href class="btn btn-primary" ng-click="onEditItem(item);">编辑</a>
+                        <a type="button" class="btn btn-info" href="/adActiveTask/adBrushAction.html?taskId={{item.id}}">脚本控制</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="inline pull-right page">
+                <a href ng-click="firstPage();">首页</a>
+                <a href ng-click="prevPage();">上一页</a>
+                {{total}} 条记录 {{pageNo}}/{{totalPage}} 页 <a href ng-click="nextPage();">下一页</a>
+                <a href ng-click="lastPage();">尾页</a></div>
+        </div>
+    </div>
+</div>
+<div id="editItem" style="display:none">
+    <form action="#" method="post" class="definewidth m20">
+        <input type="hidden" name="id" value=""/>
+        <table class="table table-bordered table-hover ">
+            <tr style="display:none;">
+                <td width="20%" class="tableleft">Id</td>
+                <td><input type="text" placeholder="" ng-model="editItem.id"></td>
+            </tr>
+            <tr>
+                <td width="20%" class="tableleft">名称</td>
+                <td><input type="text" placeholder="" ng-model="editItem.name"></td>
+            </tr>
+            <tr>
+                <td width="20%" class="tableleft">是否启用</td>
+                <td>
+                    <input type="checkbox" ng-model="editItem.enable"/>
+                </td>
+            </tr>
+            <tr>
+                <td width="20%" class="tableleft">是否动打印日志</td>
+                <td>
+                    <input type="checkbox" ng-model="editItem.writeLog"/>
+                </td>
+            </tr>
+            <tr>
+                <td width="20%" class="tableleft">是否加载图片</td>
+                <td>
+                    <input type="checkbox" ng-model="editItem.loadImages"/>
+                </td>
+            </tr>
+            <tr>
+                <td width="20%" class="tableleft">工作机类型</td>
+                <td>
+                    <select ng-model="editItem.workMachineType">
+                        <option value="1" >PC</option>
+                        <option value="2" >Phone</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td width="20%" class="tableleft">start</td>
+                <td>
+                    <input type="text" name="birthdate2" ng-model="editItem.start"/>
+                    <script type="text/javascript">
+                        $(function () {
+                            $('input[name="birthdate2"]').daterangepicker({
+                                singleDatePicker: true,
+                                showDropdowns: true,
+                                timePicker: true,
+                                timePicker24Hour: true,
+                                locale: {
+                                    format: 'YYYY/MM/DD HH:mm:ss'
+                                }
+                            });
+                        });
+                    </script>
+                </td>
+            </tr>
+            <tr>
+                <td width="20%" class="tableleft">end</td>
+                <td>
+                    <input type="text" name="birthdate" ng-model="editItem.end"/>
+                    <script type="text/javascript">
+                        $(function () {
+                            $('input[name="birthdate"]').daterangepicker({
+                                timePicker: true,
+                                singleDatePicker: true,
+                                showDropdowns: true,
+                                timePicker24Hour: true,
+                                locale: {
+                                    format: 'YYYY/MM/DD HH:mm:ss'
+                                }
+                            });
+                        });
+                    </script>
+                </td>
+            <tr ng-show="!editItem.dynamic">
+                <td width="20%" class="tableleft">日任务量</td>
+                <td><input type="text" placeholder="" ng-model="editItem.dayLimit"></td>
+            </tr>
+            <tr>
+                <td width="20%" class="tableleft">日成功量</td>
+                <td><input type="text" placeholder="" ng-model="editItem.daySuccessLimit"></td>
+            </tr>
+            <!--<tr>-->
+                <!--<td width="20%" class="tableleft">总量</td>-->
+                <!--<td><input type="text" placeholder="" ng-model="editItem.totalLimit"></td>-->
+
+            <!--</tr>-->
+            <tr>
+                <td width="20%" class="tableleft">超时时长(毫秒)</td>
+                <td><input type="text" placeholder="" ng-model="editItem.timeout"></td>
+
+            </tr>
+            <tr>
+                <td width="20%" class="tableleft">代理</td>
+                <td >
+                    <select  style="width:217px;height:35px " class="form-control"  ng-model="editItem.proxy" title="Basic example" id="example2" name="example2" multiple="multiple" size="1">
+                        <option value="{{v}}" ng-repeat="(k, v) in proxyList">{{v}}</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td width="20%" class="tableleft">UA库</td>
+                <td>
+                    <select ng-model="editItem.uaLib">
+                        <option value="{{k}}" ng-repeat="(k, v) in uaLibsList">{{v}}</option>
+                    </select>
+                </td>
+            </tr>
+            <tr ng-show="!editItem.dynamic">
+                <td width="20%" class="tableleft">任务曲线</td>
+                <td>
+                    <select ng-model="editItem.hourLimitsStr">
+                        <option value={{k}} ng-repeat="(k, v) in hourLimitsList">{{k}}</option>
+                    </select>
+                </td>
+            </tr>
+
+            <!--<tr>-->
+                <!--<td width="20%" class="tableleft">url</td>-->
+                <!--<td><input style="width:80%;" ng-model="editItem.url">-->
+            <!--</tr>-->
+
+            <tr>
+                <td width="20%" class="tableleft">是否动态分配</td>
+                <td>
+                    <input type="checkbox" ng-model="editItem.dynamic"/>
+                </td>
+            </tr>
+            <tr ng-show="editItem.dynamic">
+                <td width="20%" class="tableleft">动态分配Api</td>
+                <td><input style="width:80%;" ng-model="editItem.dynamicApi">
+            </tr>
+            <tr ng-show="editItem.dynamic">
+                <td width="20%" class="tableleft">点击率</td>
+                <td><input type="number" placeholder="" ng-model="editItem.clickRate"></td>
+            </tr>
+            <tr ng-show="editItem.dynamic">
+                <td width="20%" class="tableleft">预设点击率</td>
+                <td><input type="number" placeholder="" ng-model="editItem.predictRate"></td>
+            </tr>
+            <tr ng-show="editItem.dynamic && editItem.predictRate > 0">
+                <td width="25%" class="tableleft">预设点击率时间</td>
+                <td><input type="text" name="predictTime" placeholder="不为空、预设点击率大于零,才会生效" ng-model="editItem.predictTime"></td>
+                <script type="text/javascript">
+
+                    $(function () {
+//                        var myDate = new Date();
+                        $('input[name="predictTime"]').daterangepicker({
+                            singleDatePicker: true,
+                            showDropdowns: true,
+                            timePicker: true,
+                            timePicker24Hour: true,
+//                            minDate:myDate,
+//                            timePickerIncrement:10,
+                            locale: {
+                                format: 'YYYY/MM/DD HH:mm:ss'
+                            }
+                        });
+                    });
+                </script>
+            </tr>
+            <!--<tr>-->
+                <!--<td width="20%" class="tableleft">额外信息</td>-->
+                <!--<td><textarea style="width:80%;" ng-model="editItem.extraStr"></textarea>-->
+            <!--</tr>-->
+        </table>
+    </form>
+</div>
+<!-- End Panel Other -->
+</div>
+<script>
+    /*<![CDATA[*/
+    var app = angular.module("myapp", ['angularFileUpload']);
+    RegisterSwitch1(app);
+    app.controller("BaseController", function($scope, $http, $location, $sce, $timeout, FileUploader) {
+        $scope.remote = {
+            listUrl: "/adActiveTask/adActiveTasks.api",
+            removeUrl: "/adActiveTask/remove.api",
+            addUrl: "/adActiveTask/add.api",
+            updateUrl: "/adActiveTask/update.api"
+        };
+        BaseController($scope, $http);
+        $http.get("/hourLimits/hourLimitsList.api")
+                .success(function(data, status, headers, config){
+                    for(var key in data) {
+                        for(i=0; i<data[key].length;i++){
+                            data[key][i] = parseInt(data[key][i]);
+                        }
+                    }
+                    $scope.hourLimitsList = data;
+                })
+        $http.get("/uaLib/uaLibsList.api")
+                .success(function(data, status, headers, config){
+
+                    $scope.uaLibsList =data;
+                })
+        $http.get("/proxy/proxyList.api")
+                .success(function(data, status, headers, config){
+
+                    $scope.proxyList =data;
+                })
+        $scope.onAddAfter = function(m)
+        {
+            (function(m) {
+                m._enable = {
+                    value: m.enable, onChange: function (callback) {
+                        var a = angular.copy(m);
+                        a.enable = a._enable.value;
+                        delete a['_enable'];
+                        $http.post($scope.remote.updateUrl, a)
+                                .success(function(data) {
+                                    if (data.status == 0) {
+                                        m.enable = m._enable.value;
+                                    } else {
+                                        m._enable.value = !m._enable_value;
+                                    }
+                                    callback();
+                                });
+                    }
+                };
+            })(m);
+            return m;
+        }
+
+
+
+        $scope.onDataFilter = function(data) {
+            for (var i in data) {
+                var m = data[i];
+                (function(m) {
+                    m._enable = {
+                        value: m.enable, onChange: function (callback) {
+                            var a = angular.copy(m);
+                            a.enable = a._enable.value;
+                            delete a['_enable'];
+                            $http.post($scope.remote.updateUrl, a)
+                                    .success(function(data) {
+                                        if (data.status == 0) {
+                                            m.enable = m._enable.value;
+                                        } else {
+                                            m._enable.value = !m._enable_value;
+                                        }
+                                        callback();
+                                    });
+                        }
+                    };
+                })(m);
+            }
+            return data;
+        }
+        $scope.onEditAfter = function(){
+            $scope.editItem.hourLimits = $scope.hourLimitsList[$scope.editItem.hourLimitsStr]
+            delete $scope.editItem['hourLimitsStr'];
+            $scope.editItem.start = $('input[name="birthdate2"]').val();
+            $scope.editItem.end = $('input[name="birthdate"]').val();
+            $scope.editItem.predictTime=$('input[name="predictTime"]').val();
+            if($scope.editItem.predictTime){
+                var c =  $scope.editItem.predictTime;
+                $scope.editItem.predictTime = c.replace(/-/g, '/');
+                $scope.editItem.predictTime = new Date($scope.editItem.predictTime).Format("yyyy-MM-dd hh:mm:ss");
+            }
+            if($scope.editItem.start){
+                var a =  $scope.editItem.start;
+                $scope.editItem.start = a.replace(/-/g, '/');
+                $scope.editItem.start = new Date($scope.editItem.start).Format("yyyy-MM-dd hh:mm:ss");
+            }
+            if($scope.editItem.end) {
+                var b =  $scope.editItem.end;
+                $scope.editItem.end = b.replace(/-/g, '/');
+                $scope.editItem.end = new Date($scope.editItem.end).Format("yyyy-MM-dd hh:mm:ss");
+            }
+            $scope.editItem.hourTaskCount = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+            $scope.editItem.minTaskCount = [];
+
+            /*try {
+                $scope.editItem.extra = JSON.parse($scope.editItem.extraStr);
+            } catch (err) {
+                return {error:"额外信息json有错 " + err };
+            }*/
+
+            delete $scope.editItem['extraStr'];
+            delete $scope.editItem['_enable'];
+        }
+        $scope.pase = function(str, count){
+
+            var reg = /(\d+)(,\d+)*/;
+            if(str == null||str == "")
+            {
+                return true;
+            }
+
+            if(reg.test(str))
+            {
+                var arr = str.split(',');
+                if(arr.length!=count){
+                    return false;
+                }
+                return true
+            }
+            else
+                return false;
+        }
+        $scope.onEditBefore = function(item){
+            $scope.editItem.extraStr = JSON.stringify($scope.editItem.extra || {});
+            for(var key in $scope.hourLimitsList) {
+
+                if ($scope.arrEq(item.hourLimits, $scope.hourLimitsList[key])) {
+                    $scope.editItem.hourLimitsStr = key;
+                }
+            }
+            $("#example2").multiselect({
+                noneSelectedText: "==请选择==",
+                selectedText: "# of # selected",
+                checkAllText: "全选",
+                uncheckAllText: '全不选',
+                selectedList: 6,
+                minWidth: 175
+            }).multiselectfilter({
+
+                label: "",
+                placeholder: "查找.."
+            });
+            $("#example2").val($scope.editItem.proxy);
+//            alert($scope.editApp.status);
+            $("#example2").multiselect("refresh");
+        }
+
+
+        $scope.arrEq = function(arr1, arr2){
+
+            for(var i = 0; i < arr2.length; i++){
+                if(arr1[i]!=arr2[i])
+                {
+                    return false;
+                    break
+                }
+            }
+            return true;
+        }
+        //脚本控制代码
+
+    });
+    /*]]>*/
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+#!/bin/sh
+logf=deploy.log
+trap "echo 'start brushClient failed<<<<<<';echo `date '+%Y-%m-%d %H:%M:%S'` ' start brushClient failed<<<<<<' >> $logf;exit" ERR
+num=1
+if [ $1 ]; then
+	num=$1
+fi
+echo "start brushClient,num:$num>>>>>>"
+echo `date "+%Y-%m-%d %H:%M:%S"` " start brushClient,num:$num>>>>>>" >> $logf
+
+export JAVA_HOME=/usr/local/java/jdk1.8.0_11
+export JRE_HOME=/usr/local/java/jdk1.8.0_11/jre
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib:$CLASSPATH
+export PATH=$JAVA_HOME/bin:$PATH
+
+#nohup /usr/local/java/jdk1.8.0_11/bin/java -jar /home/apps/brushClient/brushClient.jar >> /home/apps/brushClient/run.log 2>&1 &
+
+
+runlogf=logs/`date '+%Y-%m-%d'`_run.log
+curPath=`pwd`
+#nohup java -jar $curPath/brushClient.jar >> $curPath/run.log 2>&1 &
+for((i=1;i<=$num;i++))
+  do
+    nohup java -jar $curPath/brushClient.jar >> $curPath/$runlogf 2>&1 &
+  done
+echo `date "+%Y-%m-%d %H:%M:%S"` " start brushClient success" >> $logf
+echo "start brushClient success<<<<<<"

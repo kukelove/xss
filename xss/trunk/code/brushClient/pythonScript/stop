@@ -1,0 +1,18 @@
+#!/bin/sh
+logf=deploy.log
+trap "echo 'stop brushClient failed<<<<<<';echo `date '+%Y-%m-%d %H:%M:%S'` ' stop brushClient failed<<<<<<' >> $logf;exit" ERR
+echo "stop brushClient>>>>>"
+echo `date '+%Y-%m-%d %H:%M:%S'` " stop brushClient>>>>>>" >> $logf
+clientPIDS=`ps -ef | grep java | awk '/brushClient/{print $2}'`
+if [ "$clientPIDS" ];then
+        for i in $clientPIDS
+        do
+                kill -9 $i
+        done
+fi
+phantomjsCount=`ps -ef | grep phantomjs |grep -v "grep" |wc -l`
+if [ $phantomjsCount -gt 0 ];then
+   killall -9 phantomjs
+fi
+echo "stop brushClient success <<<<<<"
+echo `date '+%Y-%m-%d %H:%M:%S'` " stop brushClient success<<<<<<" >> $logf

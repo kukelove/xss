@@ -1,0 +1,86 @@
+apply plugin: 'java'
+
+task copyExtJars(type: Copy) {
+    from configurations.runtime
+    into 'build/libs/lib'
+}
+
+task copyScript(type: Copy) {
+    from 'script'
+    into 'build/libs/script'
+}
+
+task copyPhantomjs(type: Copy) {
+    from 'phantomjs'
+    into 'build/libs/phantomjs'
+}
+
+//jar {
+//    dependsOn copyExtJars
+//    dependsOn copyScript
+//    dependsOn copyPhantomjs
+//    baseName = 'brushClient'
+////    version =  '1.0'
+//    manifest {
+//        attributes 'Main-Class': 'com.xp.brushms.client.Main'
+//        attributes 'Class-Path': file('build/libs/lib').listFiles().findAll {it.name.endsWith('.jar') }.collect { "lib/$it.name" }.join(' ')
+//    }
+//}
+
+task preClientJar() {
+    dependsOn clean
+    dependsOn copyExtJars
+    dependsOn copyScript
+    dependsOn copyPhantomjs
+}
+
+/**
+ * 生成brushClient.jar，并指定Main-class和Class-Path。
+ * 该任务必须在preClientJar任务之后执行，否则Class-Path为空
+ */
+task clientJar(type: Jar,dependsOn: [compileJava,processResources,classes]) {
+    from('build/classes/main')
+    from('build/resources/main')
+    baseName = 'brushClient'
+//    version =  '1.0'
+    manifest {
+        attributes 'Main-Class': 'com.xp.brushms.client.Main'
+        attributes 'Class-Path': file('build/libs/lib').listFiles().findAll {it.name.endsWith('.jar') }.collect { "lib/$it.name" }.join(' ')
+    }
+}
+
+//最终发布jar包
+task releaseJar() {
+    dependsOn preClientJar
+    dependsOn clientJar
+    //depentdsOn 无法保证哪个任务先执行，可以通过mustRunAfter方式指定执行顺序
+    clientJar.mustRunAfter preClientJar
+}
+
+
+//jdk version
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+repositories {
+    mavenLocal();
+    //(http://repo1.maven.org/maven2)
+    mavenCentral();
+    /*maven {
+        url "http://repo.mycompany.com/maven2"
+    }*/
+}
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile("org.apache.httpcomponents:httpclient:4.5.1")
+    compile("com.google.code.gson:gson:2.6.2");
+    compile("org.apache.commons:commons-lang3:3.4");
+    compile("com.fasterxml.jackson.core:jackson-core:2.7.4");
+    compile("com.fasterxml.jackson.core:jackson-databind:2.7.4");
+    testCompile("junit:junit:4.11")
+}
+
+/*
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}*/

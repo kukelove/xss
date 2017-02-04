@@ -1,0 +1,156 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from __future__ import division
+
+import argparse
+import os
+import logging
+import paramiko
+
+
+#os.system("rm -fr build/AdPushMs")
+#os.system("unzip build/libs/AdPushMs-1.0.0-SNAPSHOT.war.original -d build/AdPushMs")
+logger = logging.getLogger(__name__)
+
+# 当前目录下被排除的文件
+excludes = [
+    "images",
+    "logs",
+    "*.log",
+    "deploy"
+]
+
+# 要同步的服务器
+remotes = {
+    "5": "yangjun@192.168.11.5:/home/apps/brushClient/",
+    "7": "yangjun@192.168.11.7:/home/apps/brushClient/",
+    "8": "yangjun@192.168.11.8:/home/apps/brushClient/",
+    "9": "root@192.168.11.9:/home/apps/brushClient/",
+    "12": "root@192.168.11.12:/home/apps/brushClient/",
+    "22": "root@192.168.11.22:/home/apps/brushClient/",
+    "23": "root@192.168.11.23:/home/apps/brushClient/",
+    "24": "root@192.168.11.24:/home/apps/brushClient/",
+}
+
+pwds = {
+    "192.168.11.24": "hm123!@#",
+    "default": "haomiao123",
+}
+
+#start process count
+startNums = {
+    "192.168.11.5": 2,
+    "default": 1
+} 
+
+#pwd = os.path.abspath(os.path.dirname(__file__))
+
+#remote ssh operate
+
+sshCmd = ""
+#default action
+action = "sync"
+
+localPath = "/home/apps/brushClient/"
+
+def execute(remote):
+    user = str(remote[0:remote.index("@")])
+    ip = str(remote[remote.index("@") + 1:remote.index(":")])
+    pwd = pwds['default']
+    if pwds.has_key(ip):
+        pwd = pwds[ip]
+   
+    #sync files
+    if action == "sync":
+       sync_to_server(remote)
+    sshCmdT = sshCmd[0:] 
+    if action == "sync" or action == "start":
+       num = startNums['default']
+       if startNums.has_key(ip):
+	  num = startNums[ip]
+       sshCmdT = sshCmdT + " " + str(num)
+    ssh2(ip,user,pwd,sshCmdT)
+    
+
+def sync_to_server(remote):
+    logger.info("同步代码至 %s", remote)
+    user = str(remote[0:remote.index("@")])
+    ip = str(remote[remote.index("@") + 1:remote.index(":")])
+    pwd = pwds['default']
+    if pwds.has_key(ip):
+    	pwd = pwds[ip]
+    cmd = "rsync -e 'sshpass -p {pwd} ssh -o StrictHostKeyChecking=no' -acvL {excludes} {local} {remote}"
+    cmd = cmd.format(
+        excludes = " ".join("--exclude \"{0}\"".format(pattern) for pattern in excludes),
+        local = localPath,
+        remote = remote,
+	pwd = pwd
+    )
+    logger.debug(cmd)
+    os.system(cmd)
+
+def ssh2(ip,username,passwd,cmd):
+    try:
+        logger.debug("ssh_%s command: %s",ip,cmd)
+        ssh = paramiko.SSHClient()
+        # 设置成默认自动接受密钥
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(ip,22,username,passwd,timeout=5)
+        stdin,stdout,stderr = ssh.exec_command(cmd)
+#           stdin.write("Y")   #简单交互，输入 ‘Y’
+        logger.debug('ssh_%s result:\n%s',ip,stdout.read())
+	#for r in stdout.readlines():
+        #    logger.debug(r.strip("＼n"))
+        logger.debug('ssh OK, %s \n',ip)
+    except :
+        logger.debug('ssh Error, %s \n',ip)
+    finally:
+        ssh.close()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='把代码同步到服务器。')
+    parser.add_argument("names", metavar='server_name', nargs='*', help='服务器名称')
+    parser.add_argument("--debug", "-d", action = "store_true")
+    parser.add_argument("--action",'-action',choices = ['start','stop','sync'],default = 'sync')    
+    parser.add_argument("--allfiles", "-a", action = "store_true")
+    #-excludes 'lib' 'phantomjs' 'script'
+    parser.add_argument("--excludes", "-excludes",nargs='*',help='不需要同步的文件/文件夹')
+    args = parser.parse_args()
+    
+    action = args.action
+    if action == "sync":
+        sshCmd = "cd /home/apps/brushClient;./stop;./start"
+    elif action == "start":
+        sshCmd = "cd /home/apps/brushClient;./start"
+    elif action == "stop":
+        sshCmd = "cd /home/apps/brushClient;./stop"
+    else:
+        sshCmd = "cd /home/apps/brushClient;./stop;./start"
+
+    if args.allfiles:
+        excludes = []
+    if args.excludes:
+        for exc in args.excludes:
+            excludes.append(exc)
+    #标准输出
+    console = logging.StreamHandler()
+    if args.debug:
+        logging.basicConfig(level = logging.DEBUG,filename='deploy.log',filemode='w')
+	console.setLevel(logging.DEBUG)
+    else:
+        logging.basicConfig(level = logging.INFO,filename='deploy.log',filemode='w')
+	console.setLevel(logging.INFO)
+    #将定义好的console日志handler添加到root logger
+    logger.addHandler(console)
+    logger.name = "sync_to_servers"
+    if not args.names:
+        for remote in remotes.values():
+            execute(remote)
+    else:
+        for name in args.names:
+            remote = remotes[name]
+            execute(remote)
+    

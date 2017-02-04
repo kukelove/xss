@@ -1,0 +1,175 @@
+package com.xp.brushms.controller;
+
+import com.xp.brushms.dao.mongo.Pagination;
+import com.xp.brushms.entity.Code;
+import com.xp.brushms.entity.WorkMachine;
+import com.xp.brushms.service.CodeService;
+import com.xp.brushms.service.ConfigService;
+import com.xp.brushms.service.WorkMachineService;
+import com.xp.brushms.util.RunCommandUtil;
+import com.xp.brushms.vo.Msg;
+import net.sf.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.io.IOException;
+import java.util.Date;
+
+/**
+ * Created by sjh on 2016/1/14.
+ */
+@Controller
+@RequestMapping("/workMachine")
+public class WorkMachineController {
+    private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    @Autowired
+    CodeService codeService;
+
+    @Autowired
+    protected ConfigService configService;
+
+    @Autowired
+    WorkMachineService workMachineService;
+
+    @RequestMapping("/index.html")
+    public String index() {
+        return "workMachineManage/workMachine";
+    }
+
+    @RequestMapping("/workMachines.api")
+    @ResponseBody
+    public Pagination<WorkMachine> getPCProxyMachines(int pageNo, String id, String mac, String ip) {
+
+        return workMachineService.getWorkMachines(pageNo, 20, id, mac, ip);
+    }
+
+    @RequestMapping("/remove.api")
+    @ResponseBody
+    public Msg removeTask(String itemId) {
+
+        workMachineService.remove(itemId);
+        return Msg.create(0, null, 0);
+    }
+
+
+    @RequestMapping("/update.api")
+    @ResponseBody
+    public Msg update(@RequestBody WorkMachine workMachine) {
+
+        workMachineService.saveItem(workMachine);
+        return Msg.create(0, null, workMachine);
+    }
+
+    @RequestMapping("/getStatus.api")
+    @ResponseBody
+    public Msg getStatus(String commandId, String id) {
+        WorkMachine workMachine = workMachineService.getById(id);
+        JSONObject resultJson = RunCommandUtil.getResultJson(commandId);
+        String[] sourceStrArray = workMachine.getStatus().split("-");
+        Code c = codeService.getByName(sourceStrArray[0]);
+        if (!resultJson.getString("finishTime").equals("null")) {
+            if (resultJson.getBoolean("success") && resultJson.getString("result").contains(c.getCheck())) {
+                //非Test类型的脚本需要设置状态
+                workMachine.setStatus(sourceStrArray[0] + "-success");
+                workMachineService.saveItem(workMachine);
+
+            } else {
+                workMachine.setStatus(sourceStrArray[0] + "-failed");
+                workMachineService.saveItem(workMachine);
+                }
+            }
+
+        return Msg.create(0, null, resultJson);
+    }
+
+    @RequestMapping("/toAction.api")
+    @ResponseBody
+    public Msg toAction(String workMachineId, String action) throws IOException, InterruptedException {
+
+        WorkMachine workMachine = workMachineService.getById(workMachineId);
+        String mac = workMachine.getMac();
+        Code c = codeService.getById(action);
+        if(c.getName().equals("启动")){
+            if(workMachine.getThreadCount()==0){
+                c.setCode(c.getCode().replaceAll("threadCount","5"));
+            }else{
+                c.setCode(c.getCode().replaceAll("threadCount",workMachine.getThreadCount()+""));
+
+            }
+        }
+        String stu = c.getName() + "-success";
+        if (stu.equals(workMachine.getStatus()) && c.getRepeat() == 0) {
+            return Msg.create(0, "工作机已经执行过操作", null);
+        }
+        JSONObject result1 = null;
+        JSONObject result2 = null;
+        try {
+            result1 = RunCommandUtil.runCommand(workMachine.getMac(), c.getCode());
+        } catch (Exception e) {
+            return Msg.create(0, "工作机连接失败", null);
+        }
+        logger.info("action_result1_" + c.getName() + "_" + mac + ":" + result1);
+
+        if (c.getSleep() == 0) {
+            c.setSleep(9000);
+        }
+        workMachine.setLastCommandId(result1.getString("commandId"));
+        for (int i = 1; i <= 3; i++) {
+            Thread.sleep(c.getSleep() / 3);
+            result2 = RunCommandUtil.getResultJson(result1.getString("commandId"));
+//            if (result2.getBoolean("executed")  && result2.get("finishTime") != null ) {
+            if (!result2.getString("finishTime").equals("null")) {
+                logger.info("action_result2_" + c.getName() + "_" + mac + ":" + result2);
+                if (result2.getBoolean("success") && result2.getString("result").contains(c.getCheck())) {
+                    //非Test类型的脚本需要设置状态
+                    if(!c.getName().startsWith("Test_")) {
+                        workMachine.setStatus(c.getName() + "-success");
+                        workMachineService.saveItem(workMachine);
+                    }
+                    return Msg.create(0, "执行成功", null);
+                } else {
+                    if(!c.getName().startsWith("Test_")) {
+                        workMachine.setStatus(c.getName() + "-failed");
+                        workMachineService.saveItem(workMachine);
+                    }
+                    return Msg.create(0, "执行失败!\nerrorMsg:\n\t" + result2.getString("errorMsg") + "\nresult:\n\t" + result2.getString("result"), null);
+                }
+            }
+        }
+        logger.error("action_result2_" + c.getName() + "_" + mac + ": get result timeout");
+        if(!c.getName().startsWith("Test_")) {
+            workMachine.setStatus(c.getName() + "-timeout");
+            workMachineService.saveItem(workMachine);
+        }
+        return Msg.create(0, "获取执行结果超时", null);
+
+    }
+
+    @RequestMapping("save_workMachine.api")
+    @ResponseBody
+    public Msg saveWorkMachine(@RequestBody WorkMachine workMachine) {
+        // 加入工作机
+        int no = configService.getInt("_workMachine_id_auto_", 1);
+        String id = String.format("%08d", no);
+        while (true) {
+            WorkMachine c = workMachineService.getById(id);
+            if (c != null) {
+                no++;
+            } else {
+                break;
+            }
+            id = String.format("%08d", no);
+        }
+        configService.set("_workMachine_id_auto_", no + 1);
+        workMachine.setId(id);
+        workMachine.setCreated(new Date());
+        workMachineService.saveItem(workMachine);
+        return Msg.create(0, null, workMachine);
+    }
+
+}

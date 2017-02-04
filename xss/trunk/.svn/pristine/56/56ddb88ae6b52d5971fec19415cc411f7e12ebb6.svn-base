@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+
+    <title></title>
+    <link rel="shortcut icon" href="/favicon.ico"/>
+    <link href="/bootstrap/bootstrap.min.css?v=3.3.6" rel="stylesheet"/>
+    <link href="/font-awesome/font-awesome.min.css?v=4.4.0" rel="stylesheet"/>
+    <link href="/animate/animate.min.css" rel="stylesheet"/>
+    <link href="/css/style.min.css?v=4.1.0" rel="stylesheet"/>
+    <link href="/sweetalert/sweetalert.css" rel="stylesheet"/>
+    <link href="/jquery-ui/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <link href="/jquery-ui-multiselect-widget/jquery.multiselect.css" rel="stylesheet" type="text/css"/>
+    <link href="/jquery-ui-multiselect-widget/jquery.multiselect.filter.css" rel="stylesheet" type="text/css"/>
+    <style>
+        div.location .label {
+        width: 140px;
+        float: left;
+        margin-right: 3px;
+        display: block;
+        cursor: pointer;
+        }
+        .pagination {
+        margin: 0 0 !important;
+        }
+        .fixed-table-pagination {
+        margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body class="gray-bg" ng-app="myapp" ng-controller="BaseController">
+
+
+<div class="modal fade" id="targetDlg" tabindex="-1" role="dialog">
+    <div class="col-sm-6">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>{{editDlgTitle}}</h5>
+
+                <div class="ibox-tools">
+                    <a class="collapse-link">
+                        <i class="fa fa-chevron-up"></i>
+                    </a>
+                    <a class="dropdown-toggle" data-toggle="dropdown">
+                        <i class="fa fa-wrench"></i>
+                    </a>
+                    <a data-dismiss="modal">
+                        <i class="fa fa-times"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="ibox-content">
+                <form class="form-horizontal m-t" ng-submit="onSaveTarget()">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">目标名称：</label>
+
+                        <div class="col-sm-8">
+                            <input class="form-control" type="text" ng-model="editTarget.name"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">目标链接：</label>
+
+                        <div class="col-sm-8">
+                            <input class="form-control" type="text" ng-model="editTarget.url"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">检测链接：</label>
+
+                        <div class="col-sm-8">
+                            <input class="form-control" type="text" ng-model="editTarget.keepaliveUrl"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">权 重：</label>
+
+                        <div class="col-sm-8">
+                            <input class="form-control" type="number" ng-model="editTarget.weight"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">引导方式: </label>
+                        <div class="col-sm-8">
+                            <select class="form-control" ng-model="editTarget.redirectType">
+                                <option value="{{rt.value}}" ng-repeat="rt in redirectTypes">{{rt.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-8 col-sm-offset-3">
+                            <button class="btn btn-primary" type="submit">提交</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="modal fade" id="importDlg" tabindex="-1" role="dialog">
+    <div class="col-sm-6">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>导入源</h5>
+
+                <div class="ibox-tools">
+                    <a class="collapse-link">
+                        <i class="fa fa-chevron-up"></i>
+                    </a>
+                    <a class="dropdown-toggle" data-toggle="dropdown">
+                        <i class="fa fa-wrench"></i>
+                    </a>
+                    <a data-dismiss="modal">
+                        <i class="fa fa-times"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="ibox-content">
+                <form class="form-horizontal m-t" ng-submit="importSource()">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">源标签：</label>
+
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" ng-model="im.mark" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">源列表：</label>
+
+                        <div class="col-sm-8">
+                            <textarea class="form-control" ng-model="im.hosts"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">目标选择：</label>
+
+                        <div class="col-sm-8">
+                            <select id="selTargets" ng-model="im.targets" class="form-control" multiple>
+                                <option value="{{target.id}}" ng-repeat="target in targets">{{target.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-8 col-sm-offset-3">
+                            <button class="btn btn-primary" type="submit">提交</button>
+                            <div class="sk-spinner sk-spinner-circle" ng-show="importLoading">
+                                <div class="sk-circle1 sk-circle"></div>
+                                <div class="sk-circle2 sk-circle"></div>
+                                <div class="sk-circle3 sk-circle"></div>
+                                <div class="sk-circle4 sk-circle"></div>
+                                <div class="sk-circle5 sk-circle"></div>
+                                <div class="sk-circle6 sk-circle"></div>
+                                <div class="sk-circle7 sk-circle"></div>
+                                <div class="sk-circle8 sk-circle"></div>
+                                <div class="sk-circle9 sk-circle"></div>
+                                <div class="sk-circle10 sk-circle"></div>
+                                <div class="sk-circle11 sk-circle"></div>
+                                <div class="sk-circle12 sk-circle"></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5>投放策略</h5>
+
+            <div class="ibox-tools">
+                <a class="collapse-link">
+                    <i class="fa fa-chevron-up"></i>
+                </a>
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-wrench"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-user">
+                    <li><a href="#">选项1</a>
+                    </li>
+                    <li><a href="#">选项2</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="ibox-content">
+            <button ng-if="locationChanged" class="btn btn-info" ng-click="onSaveLocation()">保存修改</button>
+            <button ng-if="locationChanged" class="btn btn-info" ng-click="reloadBCLocation()">取消修改</button>
+            <form role="form">
+                <div class="form-group">
+                    <label>引导比例</label>
+                    <input type="number" placeholder="0" class="form-control" ng-change="onRedirectPercentChanged()" ng-model="bclocation.redirectPercent">
+                </div>
+                <div class="form-group">
+                    <label>投放区域</label>
+                    <div>
+                        <button class="btn btn-success" ng-click="onLocationSelectAll(true)">全选</button>
+                        <button class="btn btn-danger" ng-click="onLocationSelectAll(false)">反选</button>
+                        <br/>
+
+                        <div class="location" style="overflow-y: auto;">
+                            <label ng-click="onLocationSelect(loc)"
+                                   ng-class="loc.selected? 'label label-success': 'label label-default'"
+                                   ng-repeat="loc in locations">{{loc.LocationFullName}}</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5>目标管理</h5>
+
+            <div class="ibox-tools">
+                <a class="collapse-link">
+                    <i class="fa fa-chevron-up"></i>
+                </a>
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-wrench"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-user">
+                    <li><a href="#">选项1</a>
+                    </li>
+                    <li><a href="#">选项2</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="ibox-content">
+            <button class="btn btn-success" ng-click="onAddTarget()">添加目标</button>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>
+                        目标名称
+                    </th>
+                    <th>
+                        目标链接
+                    </th>
+                    <th>
+                        检测链接
+                    </th>
+                    <th>
+                        权重
+                    </th>
+                    <th>引导方式</th>
+                    <th>
+                        创建时间
+                    </th>
+                    <th>
+                        操作
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="target in targets">
+                    <td>{{target.name}}</td>
+                    <td>{{target.url}}</td>
+                    <td>{{target.keepaliveUrl}}</td>
+                    <td>{{target.weight}}</td>
+                    <td>{{getTargetRedirectType(target)}}</td>
+                    <td>{{target.created}}</td>
+                    <td>
+                        <button class="btn btn-primary" ng-click="onEditTarget(target)">编辑</button>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- End Panel Other -->
+</div>
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5>源管理</h5>
+
+            <div class="ibox-tools">
+                <a class="collapse-link">
+                    <i class="fa fa-chevron-up"></i>
+                </a>
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-wrench"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-user">
+                    <li><a href="#">选项1</a>
+                    </li>
+                    <li><a href="#">选项2</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="ibox-content">
+
+            <form class="form-inline" ng-submit="reloadSources()">
+
+
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="域名" ng-model="query.host">
+                </div>
+                <div class="form-group">
+                    <select class="form-control" placeholder="目标" ng-model="query.targetId">
+                        <option value="">全部</option>
+                        <option value="{{target.id}}" ng-repeat="target in targets">{{target.name}}</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">搜索</button>
+                <button class="btn btn-success" ng-click="onImportSource()">导入源</button>
+
+            </form>
+            <br/>
+
+            <div class="pull-left pagination-detail">
+                <span
+                        class="pagination-info">当前显示第 {{(sources.number-1)*sources.size + 1}} 到第 {{(sources.number-1)*sources.size+sources.numberOfElements}} 条记录，总共 {{sources.totalElements}} 条记录</span>
+            </div>
+            <br/>
+            <br/>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>
+                        源
+                    </th>
+                    <th>
+                        导向目标
+                    </th>
+                    <th>
+                        创建时间
+                    </th>
+                    <th>
+                        操作
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="source in sources.content">
+                    <td>{{source.host}}</td>
+                    <td ng-bind-html="getTargetsDesc(source.targets)"></td>
+                    <td>{{source.created}}</td>
+                    <td>
+                        <button ng-click="deleteSource(source)" class="btn btn-danger">删除</button>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+        <div class="fixed-table-pagination">
+            <div class="pull-left pagination-detail">
+                <span
+                        class="pagination-info">当前显示第 {{(sources.number-1)*sources.size + 1}} 到第 {{(sources.number-1)*sources.size+sources.numberOfElements}} 条记录，总共 {{sources.totalElements}} 条记录</span>
+            </div>
+            <div class="pull-right pagination">
+                <ul class="pagination pagination-outline">
+                    <li class="page-first disabled"><a href="javascript:void(0)">«</a></li>
+                    <li class="page-pre disabled"><a href="javascript:void(0)">‹</a></li>
+                    <li class="page-number active"><a href="javascript:void(0)">1</a></li>
+                    <li class="page-number"><a href="javascript:void(0)">2</a></li>
+                    <li class="page-number"><a href="javascript:void(0)">3</a></li>
+                    <li class="page-next"><a href="javascript:void(0)">›</a></li>
+                    <li class="page-last"><a href="javascript:void(0)">»</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- End Panel Other -->
+</div>
+<script src="/jquery/jquery.min.js?v=2.1.4"></script>
+
+<script src="/js/content.min.js?v=1.0.0"></script>
+<script type="application/javascript" src="/angular-1.3.9/angular.min.js"></script>
+<script src="/sweetalert/sweetalert.min.js"></script>
+<script type="text/javascript" src="/jquery-ui/jquery.js"></script>
+<script type="application/javascript" src="/jquery-ui/jquery-ui.min.js"></script>
+<script type="application/javascript" src="/jquery-ui-multiselect-widget/jquery.multiselect.js"></script>
+<script type="application/javascript" src="/jquery-ui-multiselect-widget/jquery.multiselect.filter.js"></script>
+<script src="/bootstrap/bootstrap.min.js?v=3.3.6"></script>
+<script>
+
+    var app = angular.module("myapp", []);
+    app.controller("BaseController", function($scope, $http, $location, $sce) {
+        $scope.targets = [];
+        $scope.targetMap = {};
+        $scope.sources = [];
+        $scope.editTarget = {};
+        $scope.redirectTypes = [{value:"",name:"带来源引导"},{value:"200-noreferer-nocookie",name:"去来源去Cookie引导"}];
+        $scope.editDlgTitle = "新增目标";
+        $scope.im = {};
+        $scope.query = { host:"", targetId:"" };
+        $scope.importLoading = false;
+        $scope.locations = [];
+        $scope.bclocation = {};
+        $scope.locationChanged = false;
+        $scope.getTargetRedirectType = function(target) {
+            for (var i in $scope.redirectTypes) {
+                var rt = $scope.redirectTypes[i];
+                if (rt.value == target.redirectType) {
+                    return rt.name;
+                }
+            }
+            return $scope.redirectTypes[0].name;
+        };
+        $scope.onLocationSelectAll = function(sel) {
+            for (var i in $scope.locations) {
+                var loc = $scope.locations[i];
+                loc.selected = sel;
+            }
+            $scope.locationChanged = true;
+        };
+        $scope.onRedirectPercentChanged = function() {
+            $scope.locationChanged = true;
+        };
+        $scope.onLocationSelect = function(loc) {
+            if (!loc.selected) loc.selected = true;
+            else loc.selected = false;
+            $scope.locationChanged = true;
+        };
+        $scope.onSaveLocation = function() {
+            $scope.bclocation.locations = [];
+            for (var i in $scope.locations) {
+                var loc = $scope.locations[i];
+                if (loc.selected) {
+                    $scope.bclocation.locations.push(loc.LocationId);
+                }
+            }
+            $http.post("/location/location_save.api", $scope.bclocation)
+                .success(function(data){
+                    if (data.status != 0) {
+                        swal("更新失败!", data.message, "danger");
+                    } else {
+                        swal("更新成功!", "恭喜恭喜", "success");
+                        $scope.reloadBCLocation();
+                    }
+                });
+        };
+        $http.get("/location/locations.api")
+            .success(function(data){
+                $scope.locations = data;
+                $scope.reloadBCLocation();
+            });
+
+        $scope.reloadBCLocation = function() {
+            $http.get("/location/bclocation.api")
+                .success(function(data){
+                    if (!data.locations) data.locations = [];
+                    $scope.bclocation = data;
+                    for (var i in $scope.locations) {
+                        var loc = $scope.locations[i];
+                        if ($scope.bclocation.locations.indexOf(loc.LocationId) >= 0) {
+                            loc.selected = true;
+                        } else {
+                            loc.selected = false;
+                        }
+                    }
+                    $scope.locationChanged = false;
+                });
+        };
+
+        $scope.getTargetsDesc = function(targets) {
+            var ret = "";
+            for (var i in targets) {
+                var t = targets[i];
+                var n = $scope.targetMap[t];
+                if (n) {
+                    ret += "<label class='label label-primary'>" + n + "</label>&nbsp;";
+                }
+            }
+            return $sce.trustAsHtml(ret);
+        };
+        $scope.onAddTarget = function() {
+            $scope.editTarget = {weight:10};
+            $scope.editDlgTitle = "新增目标";
+            $("#targetDlg").modal();
+        };
+        $scope.onEditTarget = function(target) {
+            $scope.editTarget = angular.copy(target);
+            $scope.editDlgTitle = "编辑目标";
+            $("#targetDlg").modal();
+        };
+        $scope.reloadTargets = function() {
+            $http.get("/business/bc/targets.api")
+                .success(function(data){
+                    $scope.targetMap = {};
+                    $scope.targets = data;
+                    for (var i in data) {
+                        var t = data[i];
+                        $scope.targetMap[t.id] = t.name;
+                    }
+                });
+        };
+        $scope.reloadSources = function() {
+            $http.get("/business/bc/sources.api?pageNumber=1&pageSize=50&host=" + $scope.query.host + "&targetId=" + $scope.query.targetId)
+                .success(function(data) {
+                    $scope.sources = data;
+                });
+        };
+        $scope.onSaveTarget = function() {
+            if ($scope.editTarget.id) {
+                $http.post("/business/bc/target_update.api", $scope.editTarget)
+                    .success(function(data) {
+                        if (data.status != 0) {
+                            swal("更新失败!", data.message, "danger");
+                        } else {
+                            swal("更新成功!", "恭喜恭喜", "success");
+                            $("#targetDlg").modal("hide");
+                            $scope.reloadTargets();
+                        }
+                    });
+            } else {
+                $http.post("/business/bc/target_add.api", $scope.editTarget)
+                    .success(function(data) {
+                        if (data.status != 0) {
+                            swal("添加失败!", data.message, "error");
+                        } else {
+                            swal("添加成功!", "恭喜恭喜", "success");
+                            $("#targetDlg").modal("hide");
+                            $scope.reloadTargets();
+                        }
+                    });
+            }
+        };
+
+        $scope.reloadTargets();
+        $scope.reloadSources();
+
+        $scope.onImportSource = function() {
+            $("#selTargets").multiselect({
+                noneSelectedText: "==请选择==",
+                checkAllText: "全选",
+                uncheckAllText: '全不选',
+                selectedList:6
+            }).multiselectfilter({
+                label:"",
+                placeholder:"查找.."
+            });
+            $scope.im = {hosts:"", targets:[], mark:""};
+            $("#importDlg").modal();
+        };
+        $scope.importSource = function() {
+            $scope.importLoading = true;
+            $scope.im.targets = $("#selTargets").val();
+            $http.post("/business/bc/source_import.api", $scope.im)
+                .success(function(data){
+                    $scope.importLoading = false;
+                    if (data.status != 0) {
+                        swal("导入失败!", data.message, "error");
+                    } else {
+                        swal("导入成功!", "恭喜恭喜", "success");
+                        $("#importDlg").modal("hide");
+                        $scope.reloadSources();
+                    }
+                });
+        };
+        $scope.deleteSource = function(source) {
+            $http.get("/business/bc/source_delete.api?host=" + source.host)
+                .success(function(data){
+                    $scope.reloadSources();
+                });
+        }
+    });
+
+
+
+
+
+</script>
+</body>
+
+</html>

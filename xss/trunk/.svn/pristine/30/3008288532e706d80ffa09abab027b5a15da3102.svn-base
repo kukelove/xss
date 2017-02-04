@@ -1,0 +1,76 @@
+package com.xp.brushms.controller;
+
+import com.xp.brushms.auth.NoAuth;
+import com.xp.brushms.cache.MemCache;
+import com.xp.brushms.entity.AdActiveTaskLog;
+import com.xp.brushms.entity.TaskResultStat;
+import com.xp.brushms.entity.WorkMachine;
+import com.xp.brushms.service.AdActiveTaskLogService;
+import com.xp.brushms.service.MemTaskService;
+import com.xp.brushms.service.WorkMachineService;
+import com.xp.brushms.vo.Msg;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * Created by huangzhimin on 16/1/13.
+ */
+@RestController
+@RequestMapping("api/wm/v0")
+@NoAuth
+public class ApiWorkMachineController {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+    @Resource
+    protected MemTaskService memTaskService;
+
+    @Resource
+    protected MemCache memCache;
+
+
+    @Autowired
+    WorkMachineService workMachineService;
+
+    @Autowired
+    AdActiveTaskLogService adActiveTaskLogService;
+
+
+    @RequestMapping("get_ad_active_tasks.api")
+    @ResponseBody
+    public List<AdActiveTaskLog> getAdActiveTasks(String mac, int count) {
+        WorkMachine workMachine = memCache.getWorkMachine(mac);
+        if(workMachine == null) {
+            logger.error("workMachine not found, mac:" + mac);
+            return null;
+        }
+        Date now = new Date();
+        long lastConnectTime = 0l;
+        if(workMachine.getLastConnectTime() != null) {
+            lastConnectTime = workMachine.getLastConnectTime().getTime();
+        }
+        if(now.getTime() - lastConnectTime > 60000)
+        {
+            workMachine.setLastConnectTime(now);
+            workMachineService.saveItem(workMachine);
+        }
+        List<AdActiveTaskLog> logs = memTaskService.getTasks(workMachine, count);
+        //adActiveTaskLogService.getAdActiveTaskLogList(workMachine, count);
+        return logs;
+    }
+
+    @RequestMapping("report_task_result.api")
+    public Msg reportTaskResult(@RequestBody List<TaskResultStat> results) {
+        memTaskService.receiveTaskResults(results);
+        return Msg.create();
+    }
+}

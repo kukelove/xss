@@ -1,0 +1,47 @@
+server:
+  contextPath: /
+  port: 8080
+sessionTimeout: 1800
+logging:
+  config: classpath:Log4j_dev.xml
+#  file: build/run.log
+#  level:
+#    com.exampledata.bmp: TRACE
+#    org.springframework.aop.interceptor.CustomizableTraceInterceptor: TRACE
+cusConfig:
+  loginUrl: /login.html
+  fileStorageDir: D:\Temp\brushms\pag
+  uploadDir: D:\Temp\brushms\tmg
+  gan: \\
+  #extraResource: spring/timer.xml
+spring:
+  data:
+    rest:
+      useHalAsDefaultJsonMediaType: false
+      returnBodyForPutAndPost: true
+      returnBodyOnCreate: true
+      returnBodyOnUpdate: true
+    mongodb:
+      host: 192.168.10.207
+      port: 27017
+      database: brushms
+      username: brushms_user
+      password: haomiao!@#
+  thymeleaf:
+    cache: false
+    mode: LEGACYHTML5
+  jackson:
+    timeZone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    deserialization:
+      fail-on-unknown-properties: false
+    serialization:
+      fail-on-empty-beans: false
+      write-null-map-values: true
+      write-empty-json-arrays: true
+
+multipart:
+  enabled: true # Enable support of multi-part uploads.
+  file-size-threshold: 0 # Threshold after which files will be written to disk. Values can use the suffixed "MB" or "KB" to indicate a Megabyte or Kilobyte size.
+  max-file-size: 200Mb # Max file size. Values can use the suffixed "MB" or "KB" to indicate a Megabyte or Kilobyte size.
+  max-request-size: 1000Mb

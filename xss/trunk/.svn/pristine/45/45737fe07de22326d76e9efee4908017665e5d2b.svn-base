@@ -1,0 +1,18 @@
+打包命令：gradle releaseJar
+发布步骤：
+
+    1.将相应文件（brushClient.jar,phantomjs,script,lib,deploy,start,stop）传递到发布设备：192.168.11.11，路径：/home/apps/brushClient/
+    2.执行命令：python deploy -d ,可以参数-excludes 指定不需要同步的文件/文件夹，如 -excs 'lib' 'phantomjs' 'script'
+    备注：
+        客户端设备需求：
+            jdk：版本号：1.8.0_11
+                 安装路径：/usr/local/java/jdk1.8.0_11
+            shell:ubuntu系统需要sudo dpkg-reconfigure dash 在选择项中选No。
+        192.168.11.11这台需要手动发布，别加进批量部署中。
+        发布命令：python deploy [options]
+            参数详解：
+                -d：debug模式，
+                -action: 可选‘start’，‘stop’，‘sync’，默认sync。start：启动brushClient.jar；stop:停止；sync：同步文件并启动；
+                -a: 同步所有文件。与-excludes同时存在时，需要排除-excludes指定的文件/文件夹
+                -excludes：不同步指定的文件/文件夹。例：-excludes 'lib' 'phantomjs'
+                name：指设备名称，在deploy中定义。如：python deploy -d 11 12 14,表示只同步11，12，13对应的设备。

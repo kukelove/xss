@@ -1,0 +1,88 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="10" />
+        <property name="maxPoolSize" value="100" />
+        <property name="queueCapacity" value="500" />
+    </bean>
+     <!--StatUserJob -->
+    <bean id="generateTaskJob" class="com.xp.brushms.job.GenerateTaskJob" />
+    <bean id="generateTaskJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="generateTaskJob" />
+        <property name="targetMethod" value="execute" />
+        <property name="concurrent" value="false" />
+    </bean>
+    <bean id="generateTaskJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="generateTaskJobDetail" />
+        <property name="cronExpression" value="5 0/10 * * * ?" />
+        <!--<property name="cronExpression" value="0/5 * * * * ?" />-->
+    </bean>
+
+    <bean id="reportTaskLogJob" class="com.xp.brushms.job.ReportTaskLogJob" />
+    <bean id="reportTaskLogDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="reportTaskLogJob" />
+        <property name="targetMethod" value="execute" />
+        <property name="concurrent" value="true" />
+    </bean>
+    <bean id="reportTaskLogTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="reportTaskLogDetail" />
+        <property name="cronExpression" value="0 0/5 * * * ?" />
+    </bean>
+    <bean id="logCleanJob" class="com.xp.brushms.job.LogCleanJob" />
+    <bean id="logCleanJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="logCleanJob" />
+        <property name="targetMethod" value="execute" />
+        <property name="concurrent" value="true" />
+    </bean>
+    <bean id="logCleanJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="logCleanJobDetail" />
+        <property name="cronExpression" value="0 0 1 * * ?" />
+    </bean>
+    <bean id="oNTaskJob" class="com.xp.brushms.job.ONTaskJob" />
+    <bean id="oNTaskJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="oNTaskJob" />
+        <property name="targetMethod" value="execute" />
+        <property name="concurrent" value="true" />
+    </bean>
+    <bean id="oNTaskJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="oNTaskJobDetail" />
+        <property name="cronExpression" value="0 0/4 * * * ?" />
+    </bean>
+    <bean id="offTaskJob" class="com.xp.brushms.job.OffTaskJob" />
+    <bean id="offTaskJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="offTaskJob" />
+        <property name="targetMethod" value="execute" />
+        <property name="concurrent" value="true" />
+    </bean>
+    <bean id="offTaskJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="offTaskJobDetail" />
+        <property name="cronExpression" value="0 0 0 * * ?" />
+    </bean>
+
+    <bean id="preClickRateJob" class="com.xp.brushms.job.PreClickRateJob" />
+    <bean id="preClickRateJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="preClickRateJob" />
+        <property name="targetMethod" value="execute" />
+        <property name="concurrent" value="true" />
+    </bean>
+    <bean id="preClickRateJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="preClickRateJobDetail" />
+        <property name="cronExpression" value="0 */10 * * * ?" />
+    </bean>
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="generateTaskJobTrigger" />
+                <ref bean="reportTaskLogTrigger" />
+                <ref bean="logCleanJobTrigger"/>
+                <ref bean="offTaskJobTrigger"/>
+                <ref bean="oNTaskJobTrigger"/>
+                <ref bean="preClickRateJobTrigger"/>
+            </list>
+        </property>
+        <property name="taskExecutor" ref="executor" />
+    </bean>
+</beans>
